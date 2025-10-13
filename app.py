@@ -39,6 +39,57 @@ def create_app() -> Flask:
         conn.row_factory = sqlite3.Row
         return conn
 
+    def ensure_database_schema():
+        """Ensure DB schema exists in production environments (first deploy)."""
+        try:
+            with get_db_connection() as conn:
+                exists = conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name='plans'"
+                ).fetchone()
+                if exists:
+                    return
+                schema_path = os.path.join(os.getcwd(), "database", "schema.sql")
+                if os.path.exists(schema_path):
+                    with open(schema_path, "r", encoding="utf-8") as f:
+                        conn.executescript(f.read())
+                    app.logger.info("Database schema created from schema.sql")
+                else:
+                    # Fallback: inline schema (in case schema.sql is not packaged)
+                    conn.executescript(
+                        (
+                            "PRAGMA foreign_keys = ON;\n"
+                            "CREATE TABLE IF NOT EXISTS plans (\n"
+                            "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                            "    title TEXT NOT NULL,\n"
+                            "    description TEXT,\n"
+                            "    start_date TEXT NOT NULL,\n"
+                            "    end_date TEXT NOT NULL,\n"
+                            "    subjects TEXT NOT NULL,\n"
+                            "    learning_goal TEXT,\n"
+                            "    difficulty_feedback TEXT,\n"
+                            "    hours_per_day REAL NOT NULL,\n"
+                            "    off_days TEXT,\n"
+                            "    class_schedule TEXT,\n"
+                            "    generated_guide TEXT,\n"
+                            "    generated_schedule TEXT NOT NULL,\n"
+                            "    resources TEXT,\n"
+                            "    created_at TEXT NOT NULL\n"
+                            ");\n"
+                            "CREATE TABLE IF NOT EXISTS subject_marks (\n"
+                            "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                            "    plan_id INTEGER NOT NULL REFERENCES plans(id) ON DELETE CASCADE,\n"
+                            "    subject_name TEXT NOT NULL,\n"
+                            "    component_type TEXT,\n"
+                            "    assessment_name TEXT,\n"
+                            "    max_marks REAL,\n"
+                            "    obtained_marks REAL\n"
+                            ");\n"
+                        )
+                    )
+                    app.logger.info("Database schema created from inline fallback")
+        except Exception as e:
+            app.logger.warning("Failed to ensure schema: %s", e)
+
     @app.cli.command("init-db")
     def init_db_command():
         schema_path = os.path.join(os.getcwd(), "database", "schema.sql")
@@ -80,6 +131,9 @@ def create_app() -> Flask:
             with open(schema_path, "r", encoding="utf-8") as f:
                 conn.executescript(f.read())
         print("Initialized the database.")
+
+    # Ensure schema exists at startup (safe on repeated calls)
+    ensure_database_schema()
 
     @app.route("/")
     def index():
