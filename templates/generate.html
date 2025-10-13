@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <h1>Generate Study Plan</h1>
+  <form method="post" class="grid">
+    <label>
+      <span>Title</span>
+      <input name="title" placeholder="Term Prep Plan" required />
+    </label>
+    <label>
+      <span>Subjects (comma separated)</span>
+      <input name="subjects" placeholder="Math, Physics, Literature" required />
+    </label>
+    <label>
+      <span>Start date</span>
+      <input name="start_date" type="date" required />
+    </label>
+    <label>
+      <span>End date</span>
+      <input name="end_date" type="date" required />
+    </label>
+    <label>
+      <span>Hours per day</span>
+      <input name="hours_per_day" type="number" min="1" step="0.5" value="2" />
+    </label>
+    <label class="col-span-2">
+      <span>Learning goal</span>
+      <input name="learning_goal" placeholder="Master calculus and mechanics" />
+    </label>
+    <label class="col-span-2">
+      <span>Difficulty feedback</span>
+      <input name="difficulty_feedback" placeholder="Struggling with integrals and kinematics" />
+    </label>
+    <label class="col-span-2">
+      <span>Class / fixed schedule</span>
+      <textarea name="class_schedule" rows="2" placeholder="Mon 9-11 Math, Wed 13-15 Physics"></textarea>
+    </label>
+    <fieldset class="col-span-2">
+      <legend>Off days</legend>
+      {% for d in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
+        <label class="chip"><input type="checkbox" name="off_days" value="{{ d }}"> {{ d }}</label>
+      {% endfor %}
+    </fieldset>
+    <label class="col-span-2">
+      <span>Subject difficulties (optional)</span>
+      <textarea name="subject_difficulties" rows="3" placeholder='JSON or lines, e.g.:\n{"Math":"hard","Physics":"medium","Literature":"easy"}\n-- or --\nMath: hard\nPhysics: medium\nLiterature: easy'></textarea>
+    </label>
+    <label class="col-span-2">
+      <span>Marks JSON (optional)</span>
+      <textarea name="marks_json" rows="4" placeholder='[{"subject_name":"Math","assessment_name":"Midterm","component_type":"exam","max_marks":100,"obtained_marks":62}]'></textarea>
+    </label>
+    <label class="col-span-2">
+      <span>Description (optional)</span>
+      <textarea name="description" rows="2"></textarea>
+    </label>
+    <div class="actions col-span-2">
+      <button type="submit" class="btn btn-primary">Generate</button>
+      <a class="btn" href="{{ url_for('list_plans') }}">View Plans</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
+

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: study-planner
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -c gunicorn_config.py app:app
+    autoDeploy: true
+    envVars:
+      - key: FLASK_SECRET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <h1>Generative AI Study Planner</h1>
+  <p>Create personalized learning guides, schedules and resources.</p>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('generate') }}">Create a Plan</a>
+    {% if has_plans %}
+      <a class="btn" href="{{ url_for('list_plans') }}">View My Plans</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+

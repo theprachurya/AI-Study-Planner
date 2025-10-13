@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% block head %}
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.14/main.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.14/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<section class="card" id="exportArea">
+  <div class="header-row">
+    <h1>{{ plan['title'] }}</h1>
+    <div class="actions">
+      <form method="post" action="{{ url_for('fix_schedule', plan_id=plan['id']) }}" style="display:inline">
+        <button class="btn" type="submit">Attempt to Fix JSON</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <h2>Learning Guide</h2>
+      <p style="white-space: pre-wrap">{{ plan['generated_guide'] or 'No guide generated.' }}</p>
+    </div>
+    <div>
+      <h2>Resources</h2>
+      <p style="white-space: pre-wrap">{{ plan['resources'] or 'No resources provided.' }}</p>
+    </div>
+  </div>
+
+  <h2>Schedule</h2>
+  <div class="actions" style="margin-bottom: .5rem;">
+    <button id="viewPrev" class="btn">◀ Prev</button>
+    <button id="viewNext" class="btn">Next ▶</button>
+    <button id="viewDay" class="btn">Day</button>
+    <button id="viewWeek" class="btn">Week</button>
+    <button id="viewMonth" class="btn">Month</button>
+    <button id="viewListFull" class="btn">List</button>
+    <button id="viewRaw" class="btn">Raw</button>
+    <button id="printPlan" class="btn">Print / Save</button>
+  </div>
+  <div id="calendar" class="card" style="background:transparent"></div>
+  <div id="listview" class="card" style="display:none; background:transparent">
+    <ul id="listitems" class="list"></ul>
+  </div>
+  <pre id="raw" style="display:none; white-space: pre-wrap; overflow:auto;">{{ schedule | tojson(indent=2) }}</pre>
+</section>
+
+<script>
+  const schedule = {{ schedule | tojson }};
+  const calendarEl = document.getElementById('calendar');
+  const rawEl = document.getElementById('raw');
+  // explicit view buttons
+  const guideText = {{ (plan['generated_guide'] or '') | tojson }};
+
+  function scheduleToEvents(sched) {
+    const events = [];
+    if (Array.isArray(sched)) {
+      // Legacy shape: [{ date, items: [{subject, duration_hours}] }]
+      (sched || []).forEach(day => {
+        const date = day.date;
+        (day.items || []).forEach((item, idx) => {
+          const startH = 9 + (idx * 2);
+          const endH = startH + (item.duration_hours ? Math.min(2, Number(item.duration_hours)||2) : 2);
+          const start = `${date}T${String(startH).padStart(2,'0')}:00:00`;
+          const end = `${date}T${String(endH).padStart(2,'0')}:00:00`;
+          events.push({ title: `${item.subject||'Study'}`, start, end });
+        });
+      });
+      return events;
+    }
+    // Expected shape: { 'YYYY-MM-DD': [ {start_time,end_time,subject,task} ] }
+    Object.keys(sched || {}).forEach(date => {
+      (sched[date] || []).forEach(block => {
+        const start = `${date}T${(block.start_time||'09:00')}:00`;
+        const end = `${date}T${(block.end_time||'11:00')}:00`;
+        const title = [block.subject||'Study', block.task].filter(Boolean).join(' - ');
+        events.push({ title, start, end });
+      });
+    });
+    return events;
+  }
+
+  function buildListView(sched, rangeStart, rangeEnd) {
+    const container = document.getElementById('listitems');
+    container.innerHTML = '';
+    const allDates = Object.keys(sched || {}).sort();
+    const dates = (rangeStart && rangeEnd)
+      ? allDates.filter(d => d >= rangeStart && d <= rangeEnd)
+      : allDates;
+    dates.forEach(date => {
+      const blocks = sched[date] || [];
+      const header = document.createElement('li');
+      header.innerHTML = `<strong>${date}</strong>`;
+      container.appendChild(header);
+      if (!blocks.length) {
+        const li = document.createElement('li');
+        li.textContent = 'Off day';
+        container.appendChild(li);
+      } else {
+        blocks.forEach(b => {
+          const li = document.createElement('li');
+          li.textContent = `${b.start_time || '??'} - ${b.end_time || '??'} • ${b.subject || 'Study'} — ${b.task || ''}`;
+          container.appendChild(li);
+        });
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'timeGridWeek',
+      headerToolbar: false,
+      height: 'auto',
+      events: scheduleToEvents(schedule),
+    });
+    calendar.render();
+
+    // Build list once (full range by default)
+    buildListView(schedule);
+
+    document.getElementById('viewDay').addEventListener('click', () => {
+      calendarEl.style.display = '';
+      document.getElementById('listview').style.display = 'none';
+      rawEl.style.display = 'none';
+      calendar.changeView('timeGridDay');
+    });
+    document.getElementById('viewWeek').addEventListener('click', () => {
+      calendarEl.style.display = '';
+      document.getElementById('listview').style.display = 'none';
+      rawEl.style.display = 'none';
+      calendar.changeView('timeGridWeek');
+    });
+    document.getElementById('viewMonth').addEventListener('click', () => {
+      calendarEl.style.display = '';
+      document.getElementById('listview').style.display = 'none';
+      rawEl.style.display = 'none';
+      calendar.changeView('dayGridMonth');
+    });
+
+    // Prev/Next navigate current calendar view (day/week/month)
+    document.getElementById('viewPrev').addEventListener('click', () => {
+      if (calendarEl.style.display !== 'none') {
+        calendar.prev();
+      }
+    });
+    document.getElementById('viewNext').addEventListener('click', () => {
+      if (calendarEl.style.display !== 'none') {
+        calendar.next();
+      }
+    });
+
+    // Full-range list button
+    document.getElementById('viewListFull').addEventListener('click', () => {
+      calendarEl.style.display = 'none';
+      document.getElementById('listview').style.display = '';
+      rawEl.style.display = 'none';
+      buildListView(schedule); // entire plan
+    });
+
+    // Raw view button
+    document.getElementById('viewRaw').addEventListener('click', () => {
+      calendarEl.style.display = 'none';
+      document.getElementById('listview').style.display = 'none';
+      rawEl.style.display = '';
+    });
+
+    // Print button (lets users save as PDF via browser dialog)
+    document.getElementById('printPlan').addEventListener('click', () => {
+      window.print();
+    });
+  });
+</script>
+{% endblock %}
+
+
