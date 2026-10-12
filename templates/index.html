@@ -1,14 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="card">
-  <h1>Generative AI Study Planner</h1>
-  <p>Create personalized learning guides, schedules and resources.</p>
-  <div class="actions">
-    <a class="btn btn-primary" href="{{ url_for('generate') }}">Create a Plan</a>
-    {% if has_plans %}
-      <a class="btn" href="{{ url_for('list_plans') }}">View My Plans</a>
-    {% endif %}
+<section class="home-panel">
+  <div class="home-copy">
+    <p class="eyebrow">AI-assisted study planning</p>
+    <h1>A study plan built around <em>your week.</em></h1>
+    <p class="home-lede">Bring your subjects, deadlines, class commitments and available time together. Get a plan you can review, adjust and follow.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('generate') }}">Build my plan <span aria-hidden="true">↗</span></a>
+      {% if has_plans %}
+        <a class="btn" href="{{ url_for('list_plans') }}">View saved plans</a>
+      {% endif %}
+    </div>
+    <p class="home-note"><span class="status-dot" aria-hidden="true"></span> Gemini assisted · Editable inputs · Calendar view</p>
   </div>
+  <aside class="week-specimen" aria-label="Sample weekly study schedule">
+    <div class="specimen-head"><span>WEEK PLAN</span><span>01 — 07</span></div>
+    <div class="specimen-title"><strong>One week, in focus.</strong><span>3 subjects · 8 sessions</span></div>
+    <div class="schedule-row"><span class="schedule-day">MON <small>09</small></span><span class="schedule-block block-sage"><small>09:00 — 10:30</small><strong>Mathematics</strong></span></div>
+    <div class="schedule-row"><span class="schedule-day">TUE <small>10</small></span><span class="schedule-block block-rust"><small>16:00 — 17:00</small><strong>Physics review</strong></span></div>
+    <div class="schedule-row"><span class="schedule-day">WED <small>11</small></span><span class="schedule-block block-gold"><small>11:00 — 12:30</small><strong>Literature notes</strong></span></div>
+    <div class="specimen-foot"><span>Built around your commitments</span><span aria-hidden="true">↗</span></div>
+  </aside>
 </section>
 {% endblock %}
 

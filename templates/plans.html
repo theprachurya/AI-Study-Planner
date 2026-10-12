@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="card">
-  <h1>My Plans</h1>
+<section class="card plans-page">
+  <div class="page-intro">
+    <p class="eyebrow">Your workspace</p>
+    <h1>Saved study plans</h1>
+    <p>Pick up where you left off or build a plan for what is next.</p>
+  </div>
   {% if plans %}
   <ul class="list">
     {% for p in plans %}
       <li>
-        <a href="{{ url_for('view_plan', plan_id=p['id']) }}">{{ p['title'] }}</a>
+        <a href="{{ url_for('view_plan', plan_id=p['id']) }}"><span>{{ p['title'] }}</span><small>Open plan ↗</small></a>
         <span class="muted">{{ p['created_at'] }}</span>
       </li>
     {% endfor %}

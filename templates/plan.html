@@ -6,29 +6,34 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 {% endblock %}
 {% block content %}
-<section class="card" id="exportArea">
-  <div class="header-row">
-    <h1>{{ plan['title'] }}</h1>
-    <div class="actions">
+<section class="card plan-page" id="exportArea">
+  <div class="header-row plan-header">
+    <div>
+      <p class="eyebrow">Your study plan</p>
+      <h1>{{ plan['title'] }}</h1>
+    </div>
+    <div class="actions repair-action">
       <form method="post" action="{{ url_for('fix_schedule', plan_id=plan['id']) }}" style="display:inline">
         <button class="btn" type="submit">Attempt to Fix JSON</button>
       </form>
     </div>
   </div>
 
-  <div class="grid">
-    <div>
+  <div class="grid guide-grid">
+    <div class="plan-panel">
+      <p class="eyebrow">01 · Start here</p>
       <h2>Learning Guide</h2>
       <p style="white-space: pre-wrap">{{ plan['generated_guide'] or 'No guide generated.' }}</p>
     </div>
-    <div>
+    <div class="plan-panel resources-panel">
+      <p class="eyebrow">02 · Keep exploring</p>
       <h2>Resources</h2>
       <p style="white-space: pre-wrap">{{ plan['resources'] or 'No resources provided.' }}</p>
     </div>
   </div>
 
-  <h2>Schedule</h2>
-  <div class="actions" style="margin-bottom: .5rem;">
+  <div class="schedule-heading"><div><p class="eyebrow">03 · Your week</p><h2>Study schedule</h2></div></div>
+  <div class="actions calendar-actions" style="margin-bottom: .5rem;">
     <button id="viewPrev" class="btn">◀ Prev</button>
     <button id="viewNext" class="btn">Next ▶</button>
     <button id="viewDay" class="btn">Day</button>
@@ -38,8 +43,8 @@
     <button id="viewRaw" class="btn">Raw</button>
     <button id="printPlan" class="btn">Print / Save</button>
   </div>
-  <div id="calendar" class="card" style="background:transparent"></div>
-  <div id="listview" class="card" style="display:none; background:transparent">
+  <div id="calendar" class="card calendar-card" style="background:transparent"></div>
+  <div id="listview" class="card calendar-card" style="display:none; background:transparent">
     <ul id="listitems" class="list"></ul>
   </div>
   <pre id="raw" style="display:none; white-space: pre-wrap; overflow:auto;">{{ schedule | tojson(indent=2) }}</pre>

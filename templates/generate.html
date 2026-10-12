@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
 <section class="card">
-  <h1>Generate Study Plan</h1>
+  <div class="page-intro">
+    <p class="eyebrow">Plan builder · 01</p>
+    <h1>Generate a study plan</h1>
+    <p>Start with the constraints of your real week. Add detail where it helps; the essentials are enough to begin.</p>
+  </div>
   <form method="post" class="grid">
     <label>
       <span>Title</span>
@@ -42,20 +46,20 @@
       {% endfor %}
     </fieldset>
     <label class="col-span-2">
-      <span>Subject difficulties (optional)</span>
+      <span>Subject difficulties <small>Optional</small></span>
       <textarea name="subject_difficulties" rows="3" placeholder='JSON or lines, e.g.:\n{"Math":"hard","Physics":"medium","Literature":"easy"}\n-- or --\nMath: hard\nPhysics: medium\nLiterature: easy'></textarea>
     </label>
     <label class="col-span-2">
-      <span>Marks JSON (optional)</span>
+      <span>Marks JSON <small>Optional</small></span>
       <textarea name="marks_json" rows="4" placeholder='[{"subject_name":"Math","assessment_name":"Midterm","component_type":"exam","max_marks":100,"obtained_marks":62}]'></textarea>
     </label>
     <label class="col-span-2">
-      <span>Description (optional)</span>
+      <span>Description <small>Optional</small></span>
       <textarea name="description" rows="2"></textarea>
     </label>
     <div class="actions col-span-2">
-      <button type="submit" class="btn btn-primary">Generate</button>
-      <a class="btn" href="{{ url_for('list_plans') }}">View Plans</a>
+      <button type="submit" class="btn btn-primary">Generate study plan <span aria-hidden="true">↗</span></button>
+      <a class="btn" href="{{ url_for('list_plans') }}">View saved plans</a>
     </div>
   </form>
 </section>

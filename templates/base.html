@@ -5,22 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title or 'AI Study Planner' }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}">
   <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   {% block head %}{% endblock %}
   </head>
 <body>
-  <header class="container header">
-    <div class="brand"><a href="{{ url_for('index') }}">AI Study Planner</a></div>
-    <nav>
+  <header class="site-header">
+    <div class="container header">
+    <div class="brand"><a href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">S</span><span>Study planner<small>AI-assisted planning</small></span></a></div>
+    <nav aria-label="Main navigation">
       <a href="{{ url_for('generate') }}">Generate</a>
       <a href="{{ url_for('list_plans') }}">My Plans</a>
-      <button id="themeToggle" class="btn btn-secondary" aria-label="Toggle theme">🌓</button>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme"><span aria-hidden="true">◐</span><span>Theme</span></button>
     </nav>
+    </div>
   </header>
-  <main class="container">
+  <main class="container app-main">
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <ul class="flash">
@@ -33,7 +36,8 @@
     {% block content %}{% endblock %}
   </main>
   <footer class="container footer">
-    <p>Built with Flask + Gemini</p>
+    <p>Built for a clearer week ahead.</p>
+    <span>Python · Flask · Gemini</span>
   </footer>
 </body>
 </html>
